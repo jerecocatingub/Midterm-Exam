@@ -1,3 +1,4 @@
 <resources>
     <string name="app_name">Album Search</string>
+    <string name="api_key">de769b1e94bfc795020076abff63be87</string>
 </resources>
