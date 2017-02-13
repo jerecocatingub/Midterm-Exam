@@ -1,21 +1,23 @@
 package exam.midterm.com.albumsearch;
 
 import android.content.Context;
-import android.provider.ContactsContract;
 import android.support.v4.app.FragmentActivity;
-import android.support.v4.content.ContextCompat;
 import android.support.v7.widget.PopupMenu;
 import android.support.v7.widget.RecyclerView;
 import android.view.LayoutInflater;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.Button;
 import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import com.squareup.picasso.Picasso;
+
+import java.util.ArrayList;
 import java.util.List;
+
+import static java.security.AccessController.getContext;
 
 /**
  * Created by Jereco on 2/11/2017.
@@ -25,34 +27,47 @@ public class AlbumAdapter extends RecyclerView.Adapter<AlbumAdapter.ViewHolder> 
 
     private List<Album> mAlbums;
     private Context mContext;
+    private ViewHolder mHolder;
     int layout;
 
-    public AlbumAdapter(FragmentActivity activity, List<Album> albums, int layout) {
-        mAlbums = albums;
-        this.layout = layout;
+    public AlbumAdapter(Context mContext, List<Album> albums){
+        this.mContext = mContext;
+        this.mAlbums = albums;
     }
 
     @Override
-    public AlbumAdapter.ViewHolder onCreateViewHolder(ViewGroup parent, int viewType) {
-        mContext = parent.getContext();
-        LayoutInflater inflater = LayoutInflater.from(mContext);
-
-        final View itemLayoutView = LayoutInflater.from(mContext)
-                .inflate(layout, null);
-
-        ViewHolder viewHolder = new ViewHolder(itemLayoutView);
-        return viewHolder;
+    public AlbumAdapter.ViewHolder onCreateViewHolder(ViewGroup parent,
+                                                             int viewType) {
+        View v = LayoutInflater.from(parent.getContext()).inflate(R.layout.card_layout,parent,false);
+        mHolder = new ViewHolder(v);
+        return mHolder;
     }
 
     @Override
     public void onBindViewHolder(AlbumAdapter.ViewHolder viewHolder, int position) {
-        Album album = mAlbums.get(position);
+        final Album current = mAlbums.get(position);
+        if(!current.getImage().isEmpty()){
+            Picasso.with(mContext)
+                    .load(mAlbums.get(position).getImage())
+                    .into(viewHolder.image);
 
-        TextView artist = viewHolder.artist;
-        TextView title = viewHolder.title;
+        }
 
-        artist.setText(album.getArtist());
-        title.setText(album.getTitle());
+        mHolder.title.setText(current.getTitle());
+        mHolder.artist.setText(current.getArtist());
+    }
+
+    @Override
+    public int getItemCount() {
+        if(mAlbums==null){
+            return 0;
+        }
+        return mAlbums.size();
+    }
+
+    @Override
+    public int getItemViewType(int position) {
+        return position;
     }
 
 
@@ -68,11 +83,6 @@ public class AlbumAdapter extends RecyclerView.Adapter<AlbumAdapter.ViewHolder> 
             title = (TextView) itemView.findViewById(R.id.txtTitle);
             image = (ImageView) itemView.findViewById(R.id.imgAlbum);
         }
-    }
-
-    @Override
-    public int getItemCount() {
-        return mAlbums.size();
     }
 
 }
