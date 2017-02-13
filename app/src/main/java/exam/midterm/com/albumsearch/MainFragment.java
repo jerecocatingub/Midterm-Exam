@@ -4,6 +4,8 @@ package exam.midterm.com.albumsearch;
 import android.app.Activity;
 import android.app.Fragment;
 import android.app.ProgressDialog;
+import android.content.Context;
+import android.net.wifi.WifiManager;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.support.v7.widget.LinearLayoutManager;
@@ -11,6 +13,8 @@ import android.support.v7.widget.RecyclerView;
 import android.util.Log;
 import android.view.KeyEvent;
 import android.view.LayoutInflater;
+import android.view.Menu;
+import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
@@ -45,20 +49,25 @@ public class MainFragment extends Fragment {
 
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
         view = inflater.inflate(R.layout.fragment_main, container, false);
-        setHasOptionsMenu(true);
         mSearch = (EditText) view.findViewById(R.id.etxtSearch);
         mMessage = (TextView) view.findViewById(R.id.txtWarning);
-
         mRecycler = (RecyclerView) view.findViewById(R.id.rvCards);
+
+        final WifiManager wifi = (WifiManager) view.getContext().getSystemService(Context.WIFI_SERVICE);
+        setHasOptionsMenu(true);
 
         mSearch.setOnEditorActionListener(new TextView.OnEditorActionListener() {
             @Override
             public boolean onEditorAction(TextView v, int actionId, KeyEvent event) {
                 if (actionId == EditorInfo.IME_ACTION_SEARCH) {
-                    mAlbum = String.valueOf(mSearch.getText());
-                    url = "http://ws.audioscrobbler.com/2.0/?method=album.search&album=" + mAlbum + "&api_key=de769b1e94bfc795020076abff63be87&limit=50&format=json";
+                    if (!wifi.isWifiEnabled()) {
+                        Toast.makeText(view.getContext(), "Connect to a network", Toast.LENGTH_SHORT).show();
+                    }else {
+                        mAlbum = String.valueOf(mSearch.getText());
+                        url = "http://ws.audioscrobbler.com/2.0/?method=album.search&album=" + mAlbum + "&api_key=de769b1e94bfc795020076abff63be87&limit=50&format=json";
 
-                    new AlbumAsyncTask().execute();
+                        new AlbumAsyncTask().execute();
+                    }
                     return true;
                 }
                 return false;
@@ -144,16 +153,31 @@ public class MainFragment extends Fragment {
         }
     }
 
-    public void clearRecyclerView(){
-        int size = data.size();
-//        data = new ArrayList<>();
-////        data.clear();
-//        mAdapter.notifyDataSetChanged();
-//        mRecycler.setAdapter(new AlbumAdapter(view.getContext(),data));
+    @Override
+    public void onCreateOptionsMenu(Menu menu, MenuInflater inflater) {
+        menu.clear();
+        inflater.inflate(R.menu.menu_layout, menu);
+        super.onCreateOptionsMenu(menu, inflater);
+    }
+
+    @Override
+    public boolean onOptionsItemSelected(MenuItem item) {
+        switch (item.getItemId()){
+            case R.id.ch_clear:
+                clearRecyclerView();
+                Toast.makeText(view.getContext(), "Data Erased", Toast.LENGTH_SHORT).show();
+                break;
+        }
+        return true;
+    }
+
+    public void clearRecyclerView() {
+        int size = this.data.size();
         data.clear();
-        mRecycler = (RecyclerView) view.findViewById(R.id.rvCards);
-        mRecycler.removeAllViews();
-        mAdapter.notifyItemRangeChanged(0, size);
+        mAdapter.notifyItemRangeRemoved(0, size);
+        mRecycler.setAdapter(new AlbumAdapter(view.getContext(),new ArrayList<Album>()));
+        mMessage.setText("There's no album present at this moment.");
+        mSearch.setText("");
     }
 }
 

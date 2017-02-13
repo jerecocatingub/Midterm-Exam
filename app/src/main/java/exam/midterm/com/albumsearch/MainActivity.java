@@ -1,10 +1,13 @@
 package exam.midterm.com.albumsearch;
 
+import android.content.Context;
+import android.net.wifi.WifiManager;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.support.v7.widget.Toolbar;
 import android.view.Menu;
 import android.view.MenuItem;
+import android.widget.Toast;
 
 public class MainActivity extends AppCompatActivity {
 
@@ -15,21 +18,14 @@ public class MainActivity extends AppCompatActivity {
 
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
+        checkWifiAvailability();
     }
 
-    @Override
-    public boolean onCreateOptionsMenu(Menu menu) {
-        // Inflate the menu; this adds items to the action bar if it is present.
-        getMenuInflater().inflate(R.menu.menu_layout, menu);
-        return true;
-    }
 
-    @Override
-    public boolean onOptionsItemSelected(MenuItem item) {
-        MainFragment mf = new MainFragment();
-        switch (item.getItemId()){
-            case R.id.ch_clear: mf.clearRecyclerView(); break;
+    public void checkWifiAvailability() {
+        WifiManager wifi = (WifiManager) getSystemService(Context.WIFI_SERVICE);
+        if (!wifi.isWifiEnabled()) {
+            Toast.makeText(this, "No network Connection", Toast.LENGTH_SHORT).show();
         }
-        return true;
     }
 }
